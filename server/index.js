@@ -38,8 +38,3 @@ app.use(
 app.listen(port);
 // console.log(port);
 console.log(`Server is listening on port: ${port}`);
-
-// npm run dev      *****
-// https://youtu.be/BcLNfwF04Kw?t=2350
-// project name: graphqlMERN
-// cdsoltis, Daisy0037 for username and password to create the cluster

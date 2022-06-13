@@ -8,6 +8,7 @@ const {
   GraphQLString,
   GraphQLSchema,
   GraphQLList,
+  GraphQLNonNull, // this is a type that can't be null; Prevents null values from being inserted into the database.
   graphql,
 } = require("graphql");
 
@@ -88,8 +89,36 @@ const RootQuery = new GraphQLObjectType({
   },
 });
 
+// MUTATIONS
+const mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: {
+    addClient: {
+      // addClient: THINK ABOUT IT? What are we going to need to create here? We need: type, args, resolver;
+      type: ClientType,
+      // the args will be the fields we want to add and come from the ClientType created.
+      args: {
+        name: { type: GraphQLNonNull(GraphQLString) }, // GraphQLNonNull means that this field can't be null
+        email: { type: GraphQLNonNull(GraphQLString) },
+        phone: { type: GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parent, args) {
+        console.log({ args }); // the arguments will come from the graphql query which will come from a form on the frontend.
+        // create a new client using the mongoose model;
+        const client = new Client({
+          name: args.name,
+          email: args.email,
+          phone: args.phone,
+        });
+        return client.save();
+      },
+    },
+  },
+});
+
 module.exports = new GraphQLSchema({
   query: RootQuery,
+  mutation: mutation,
 });
 
 // DETAILED NOTES
