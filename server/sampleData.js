@@ -1,3 +1,5 @@
+/* NOT BEING USED */
+
 // Projects
 const projects = [
   {
