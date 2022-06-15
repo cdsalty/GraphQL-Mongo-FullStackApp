@@ -9,7 +9,7 @@ const {
   GraphQLSchema,
   GraphQLList,
   GraphQLNonNull, // this is a type that can't be null; Prevents null values from being inserted into the database.
-  graphql,
+  GraphQLEnumType, // limits the values that can be inserted into the database
 } = require("graphql");
 
 const ProjectType = new GraphQLObjectType({
@@ -123,13 +123,36 @@ const mutation = new GraphQLObjectType({
       },
       resolve(parent, args) {
         console.log({ args });
-        return Client.findByIdAndRemove(args.id);
+        // mongoose method. (TODO: go back and add the ability to delete the project when the client is deleted)
+        return Client.findByIdAndRemove(args.id); // will not allow you to delete by name, email, phone.
       },
+    },
+
+    // ADD A PROJECT
+    addProject: {
+      type: ProjectType,
+      args: {
+        name: { type: GraphQLNonNull(GraphQLString) },
+        description: { type: GraphQLNonNull(GraphQLString) },
+        // The status will use an ENUM TYPE (add graphqlenum...)(allows us to specify a certain value range; limited set of values)
+        status: {
+          type: new GraphQLEnumType({
+            name: "ProjectStatus", // the name of the enum type must be UNIQUE
+            values: {
+              new: { value: "Not Started" },
+              progress: { value: "In Progress" },
+              completed: { value: "Completed" },
+            },
+          }),
+          defaultValue: "Not Started",
+        },
+        // also need a clientId field
+        clientId: { type: GraphQLNonNull(GraphQLID) },
+      },
+      // Ready to add resolver: the resolver will take the arguments and add a new project to the database.
     },
   },
 });
-
-//   PICK BACK UP HERE https://youtu.be/BcLNfwF04Kw?t=3627
 
 module.exports = new GraphQLSchema({
   query: RootQuery,
