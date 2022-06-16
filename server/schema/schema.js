@@ -25,7 +25,7 @@ const ProjectType = new GraphQLObjectType({
       resolve(parent, args) {
         // Parent is a child of the project
         console.log({ parent });
-        console.log({ args });
+        console.log("will return a new project");
         // The projects have a clientId field and it pertains to the id of the client
         // return clients.find((client) => client.id === parent.clientId);
         return Client.findById(parent.clientId); // parent refers to the project (in our Projectl.js, we have a clientId field)
@@ -50,9 +50,10 @@ const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
   fields: {
     projects: {
+      // projects is the name of the query we want to make
       type: new GraphQLList(ProjectType),
       resolve(parent, args) {
-        console.log({ args });
+        // console.log({ args });
         // return projects;
         return Project.find(); // returns an array of all the projects
       },
@@ -122,7 +123,7 @@ const mutation = new GraphQLObjectType({
         },
       },
       resolve(parent, args) {
-        console.log({ args });
+        console.log("Deleting a client" + { args });
         // mongoose method. (TODO: go back and add the ability to delete the project when the client is deleted)
         return Client.findByIdAndRemove(args.id); // will not allow you to delete by name, email, phone.
       },
@@ -130,6 +131,7 @@ const mutation = new GraphQLObjectType({
 
     // ADD A PROJECT
     addProject: {
+      // the name of the mutation that will be used in the graphql query
       type: ProjectType,
       args: {
         name: { type: GraphQLNonNull(GraphQLString) },
@@ -150,6 +152,16 @@ const mutation = new GraphQLObjectType({
         clientId: { type: GraphQLNonNull(GraphQLID) },
       },
       // Ready to add resolver: the resolver will take the arguments and add a new project to the database.
+      resolve(parent, args) {
+        console.log("The args of adding a new a project are: ", { args });
+        const project = new Project({
+          name: args.name,
+          description: args.description,
+          status: args.status,
+          clientId: args.clientId,
+        });
+        return project.save(); // mongoose method
+      },
     },
   },
 });
@@ -160,6 +172,18 @@ module.exports = new GraphQLSchema({
 });
 
 // DETAILED NOTES
+// To query projects in graphiql, you need to add the following to the query:
+// {
+//   projects {
+//     name
+//     status
+//     client {
+//       name
+//       id
+//     }
+//   }
+// }
+
 /*
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
